@@ -1,0 +1,54 @@
+﻿@model IEnumerable<LibraryCoreProject.Models.Book>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Bookname)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.cost)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.rate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Category.Categoryname)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.date)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.picture)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Bookname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.cost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.rate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category.Categoryname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.date)
+            </td>
+            <td>
+                <img src="/uploads/@Html.DisplayFor(modelItem => item.picture)" width='100' />
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Bookcode }) |
+                @Html.ActionLink("Details", "Details", new { id = item.Bookcode }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Bookcode })
+            </td>
+        </tr>
+    }
+
+</table>

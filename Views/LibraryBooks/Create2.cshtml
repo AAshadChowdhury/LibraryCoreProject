@@ -1,0 +1,386 @@
+﻿@model LibraryCoreProject.Models.Category_book
+<h2>Create: @ViewBag.sid</h2>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<div class="container-fluid">
+    <form enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>Categories and Books</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="row">
+                <div class="col-sm-4">
+                    <h2>Category Table</h2>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.CatId, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.CatId, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.CatId, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.CategoryName, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.CategoryName, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.CategoryName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.department, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.department, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.department, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-sm-8">
+                    <div id="items"></div>
+                    <h2>Books Table</h2>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.BookCode, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.BookCode, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.BookCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.BookName, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.BookName, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.BookName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Cost, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Cost, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Cost, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Rate, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Rate, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Rate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.date, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @*@Html.EditorFor(model => model.date, new { htmlAttributes = new { @class = "form-control" } })*@
+                            <input type="date" name="date" id="date" class="form-control" />
+                            @Html.ValidationMessageFor(model => model.date, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="file" name="picture" id="picture" />
+                    </div>
+
+                    <button type='button' id="add" class="btn btn-primary">Add</button>
+                </div>
+            </div>
+            <h2 style="color:orange">@ViewBag.DeptError</h2>
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <button type='button' id="save" class="btn btn-lg btn-default btn-primary">Save</button>
+                    <button type='button' id="deleteall" class="btn btn-lg btn-default btn-primary">Delete</button>
+                    <input type="submit" value="Create" class="btn btn-default" style="display:none" />
+                </div>
+
+
+            </div>
+
+        </div>
+    </form>
+
+    <div>
+        @Html.ActionLink("Back to List", "Index")
+    </div>
+</div>
+<script>
+var gvar = "";
+var act = [];
+$(document).ready(function () {
+
+
+var index = -1;
+let searchParams = new URLSearchParams(window.location.search)
+if (searchParams.has('sid')) {
+    $("#CatId").val(searchParams.get('sid'));
+deptChange();
+}
+else {
+    $.ajax('/LibraryBooks/GenerateCodeDP/',
+{
+method: 'get',
+timeout: 500,
+success: function (data, status, xhr) {
+//alert(data);
+    $("#CatId").val(data)
+},
+error: function (jqXhr, textStatus, errorMessage) {
+$('#out').html('Error: ' + errorMessage);
+}
+});
+}
+    $("#CatId").on("change paste keyup", function () {
+deptChange();
+
+});
+function deptChange() {
+    $.ajax('/LibraryBooks/GetDept/' + $("#CatId").val(),
+{
+dataType: 'json',
+method: 'get',
+timeout: 500,
+success: function (data, status, xhr) {
+
+if (data != "") {
+    $("#CategoryName").val(data[0].CategoryName);
+    $("#department").val(data[0].department);
+showItems();
+    $.ajax('/LibraryBooks/GenerateCodeItems/',
+{
+method: 'get',
+timeout: 500,
+success: function (data, status, xhr) {
+$("#BookCode").val(data)
+},
+error: function (jqXhr, textStatus, errorMessage) {
+$('#out').html('Error: ' + errorMessage);
+}
+});
+}
+else {
+    $("#CategoryName").val("");
+    $("#department").val("");
+
+
+showItems();
+}
+
+
+},
+error: function (jqXhr, textStatus, errorMessage) {
+$('#out').html('Error: ' + errorMessage);
+}
+});
+}
+function showItems() {
+    $.ajax('/LibraryBooks/GetItems/' + $("#CatId").val(),
+{
+dataType: 'json',
+method: 'get',
+timeout: 500,
+success: function (data, status, xhr) {
+act = data;
+// alert(act);
+items(2);
+},
+error: function (jqXhr, textStatus, errorMessage) {
+$('#out').html('Error: ' + errorMessage);
+}
+});
+}
+function items(srv=1) {
+var j = 0;
+var a = "<table class='table'><tr><th>Code</th><th>Name</th><th>Cost</th><th>Sale</th><th>Date</th><th>Picture</th><th></th></tr>";
+for (d in act) {
+if (srv != 1) {
+value = new Date(parseInt(act[d].date.replace("/Date(", "").replace(")/", ""), 10));
+var dd = String(value.getDate()).padStart(2, '0');
+var mm = String(value.getMonth() + 1).padStart(2, '0'); //January is 0!
+var yyyy = value.getFullYear();
+
+today = yyyy + "-" + mm + "-" + dd;
+act[d].date = today;
+}
+else
+today = act[d].date;
+
+// value = new Date(act[d].date.substr(6));
+//value = new Date(parseInt(act[d].date.replace("/Date(", "").replace(")/", ""), 10));
+//alert(act[d].date+"  "+today)
+a += `<tr><td>${act[d].BookCode}</td><td>${act[d].BookName}</td><td>${act[d].cost}</td><td>${act[d].rate}</td><td>${today}</td><td><img src='/uploads/${act[d].picture}' width='100'/></td><td><button type='button' onclick="edit1('${act[d].BookCode}','${act[d].BookName}','${act[d].cost}','${act[d].rate}',${j},'${today}','${act[d].picture}')">Edit</button><button type='button' onclick="remove(${j})">Remove</button></td></tr>`;
+j++;
+}
+a += "</table>";
+$("#items").html(a);
+}
+$("#add").click(function () {
+var dt = $("#date").val();// new Date($("#date").val());
+//alert($("#date").val());
+if ($("#add").html() == "Add") {
+
+
+
+if (window.FormData !== undefined) {
+
+var fileUpload = $("#picture").get(0);
+var files = fileUpload.files;
+var fname = files[0].name
+// Create FormData object
+var fileData = new FormData();
+
+// Looping over all files and add it to FormData object
+for (var i = 0; i < files.length; i++) {
+fileData.append(files[i].name, files[i]);
+}
+
+// Adding one more key to FormData object
+fileData.append('username', 'Manas');
+
+$.ajax({
+url: '/LibraryBooks/UploadFiles',
+type: "POST",
+contentType: false, // Not to set any content header
+processData: false, // Not to process data
+data: fileData,
+success: function (result) {
+// alert(result+"  "+fname);
+
+    act.push({ "BookCode": $("#BookCode").val(), "BookName": $("#BookName").val(), "cost": $("#Cost").val(), "rate": $("#Rate").val(), "date": dt, "picture": fname });
+items();
+},
+error: function (err) {
+alert(err.statusText);
+}
+});
+} else {
+alert("FormData is not supported.");
+}
+
+
+// alert($("#date").val() + "  " + $("#picture").val());
+
+}
+else {
+//alert("here");
+    v = { "BookCode": $("#BookCode").val(), "BookName": $("#BookName").val(), "cost": $("#Cost").val(), "rate": $("#Rate").val(), "date": dt, "picture": $("#picture").val().split('\\').pop() };
+act[index] = v;
+$("#add").html("Add");
+items();
+}
+// alert(act.length);
+
+});
+
+$("#deleteall").click(function () {
+    $.ajax('/LibraryBooks/DeleteAll/' + $("#CatId").val(),
+{
+dataType: 'json',
+method: 'get',
+timeout: 500,
+success: function (data, status, xhr) {
+
+
+act = [];
+items();
+    window.location = '/LibraryBooks/showme/'
+},
+error: function (jqXhr, textStatus, errorMessage) {
+$('#out').html('Error: ' + errorMessage);
+}
+});
+
+});
+
+$("#save").click(function () {
+var i = 0;
+// alert($("#DeptId").val());
+    $.ajax('/LibraryBooks/DeleteAll/' + $("#CatId").val(),
+{
+dataType: 'json',
+method: 'get',
+timeout: 500,
+success: function (data, status, xhr) {
+
+
+    url = `Catid=${$("#CatId").val()}&Categoryname=${$("#CategoryName").val()}&department=${$("#department").val()}`;
+//alert('/deptitems/InsertDept?' + url);
+    $.ajax('/LibraryBooks/InsertDept?' + url,
+{
+dataType: 'json',
+method: 'get',
+timeout: 500,
+success: function (data, status, xhr) {
+
+//alert(act.length);
+for (d in act) {
+// alert(d);
+    url1 = `BookCode=${act[d].BookCode}&BookName=${act[d].BookName}&CatId=${$("#CatId").val()}&cost=${act[d].cost}&rate=${act[d].rate}&date=${act[d].date}&picture=${act[d].picture}`;
+
+    $.ajax('/LibraryBooks/Insertitems?' + url1,
+{
+dataType: 'json',
+method: 'get',
+timeout: 500,
+success: function (data, status, xhr) {
+i++;
+
+if (i == act.length) {
+act = [];
+items();
+    window.location = "/LibraryBooks/showme";
+}
+},
+error: function (jqXhr, textStatus, errorMessage) {
+$('#out').html('Error: ' + errorMessage);
+}
+});
+
+
+
+}
+
+
+
+
+
+},
+error: function (jqXhr, textStatus, errorMessage) {
+$('#out').html('Error: ' + errorMessage);
+}
+});
+
+
+
+
+
+},
+error: function (jqXhr, textStatus, errorMessage) {
+$('#out').html('Error: ' + errorMessage);
+}
+});
+});
+remove = function (j) {
+act.splice(j, 1);
+items();
+}
+edit1 = function (a, b, c, d, e,f,g) {
+//alert("OK")
+$("#BookCode").val(a);
+// b = b.replace("\"", "\\\"");
+$("#BookName").val(b);
+$("#Cost").val(c);
+$("#Rate").val(d);
+//alert(e)
+$("#add").html("Edit");
+index = e
+//alert(f)
+// value = new Date(parseInt(f.substr(6)));
+$("#date").val(f);
+// $("#picture").val("/uploads/"+g);
+
+}
+})
+</script>
